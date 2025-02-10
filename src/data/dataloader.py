@@ -25,7 +25,7 @@ def process_image_paths(data):
     for i in range(3):
         for idx, (image_path, pid, cam_id) in enumerate(data[i]):
             image_path = image_path.split('\\')
-            image_path = os.path.join(f".{image_path[0]}", image_path[1], 'archive', image_path[2], image_path[3])
+            image_path = os.path.join(image_path[0], image_path[1], 'archive', image_path[2], image_path[3])
             data[i][idx][0] = image_path
             
 process_image_paths(data)
@@ -95,3 +95,6 @@ def get_traindata():
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
     
     return train_loader
+
+def get_total_pids():
+    return np.max(train_labels)
