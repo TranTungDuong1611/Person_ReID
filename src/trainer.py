@@ -1,21 +1,19 @@
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
 import numpy as np
 from tqdm import tqdm
+
 sys.path.append(os.getcwd())
 
 import torch
-import torch.nn as nn
-import torchvision
-
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 from torch.optim.lr_scheduler import StepLR
 
-from src.model import *
 from src.data.dataloader import *
+from src.model import *
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -28,6 +26,7 @@ def read_config(config_path):
 config = read_config('./src/config.json')
 
 def training_loop(model, train_loader, lr, epochs, weight_decay, config=config, device=device):
+    os.makedirs('checkpoints', exist_ok=True)
     model = model.to(device)
     
     criterion = CrossEntropyLoss(label_smoothing=0.1)
@@ -36,11 +35,11 @@ def training_loop(model, train_loader, lr, epochs, weight_decay, config=config, 
     
     train_losses = []
     best_weight = 1e9
-    for epoch in tqdm(range(epochs)):
+    for epoch in range(epochs):
         model.train()
         
         batch_loss = []
-        for i, (image, label) in enumerate(train_loader):
+        for i, (image, label) in tqdm(enumerate(train_loader)):
             image = image.to(device)
             label = label.to(device)
             
@@ -63,14 +62,15 @@ def training_loop(model, train_loader, lr, epochs, weight_decay, config=config, 
             best_weight = train_loss
             torch.save(model.state_dict(), './checkpoints/best_weight.pt')
         
-        print(f"Epoch {epoch}/{epochs}\ttrain_loss: {train_loss}")
+        print(f"Epoch {epoch}/{epochs}\ttrain_loss: {train_loss:.4f}")
         
-    plt.plot(train_losses, range(train_loss))
+    plt.plot(range(len(train_losses)), train_losses)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.tight_layout()
     plt.title('Training loss')
-    plt.show()
+    os.makedirs('figures', exist_ok=True)
+    plt.savefig('./figures/training_loss.png')
 
 def main():
     parser = argparse.ArgumentParser()
