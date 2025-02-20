@@ -97,4 +97,4 @@ def get_traindata():
     return train_loader
 
 def get_total_pids():
-    return np.max(train_labels)
+    return np.max(train_labels) + 1
