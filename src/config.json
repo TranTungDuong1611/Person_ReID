@@ -1,0 +1,14 @@
+{
+    "osnet":
+    {
+        "lr": 0.065,
+        "epochs": 350,
+        "weight_decay": 5e-4,
+        "decay_time": [150, 225, 300],
+        "layers": [64, 256, 384, 512]
+    },
+    "dataset":
+    {
+        "batch_size": 128
+    }
+}
