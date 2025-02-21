@@ -1,6 +1,12 @@
+import json
 import torch
 import torch.nn as nn
 import torchvision
+from torchsummary import summary
+
+config_path = 'src/config.json'
+with open(config_path, 'r') as f:
+    config = json.load(f)
 
 class DepthwiseSeperable(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=1):
@@ -261,7 +267,9 @@ class OSNet(nn.Module):
         x = self.classifer(x)
         return x
     
-def OSNet_model(input, num_classes, feature_extraction=False, in_channels=3, layers=[64, 256, 384, 512]):
+def OSNet_model(num_classes, feature_extraction=False, in_channels=3, layers=config['osnet']['layers']):
     model = OSNet(in_channels=in_channels, layers=layers, num_classes=num_classes, feature_extraction=feature_extraction)
-    label = model(input)
-    return label
+    return model
+
+# model = OSNet(in_channels=3, layers=[32, 128, 192, 256], num_classes=10)
+# summary(model, (3, 256, 128))
