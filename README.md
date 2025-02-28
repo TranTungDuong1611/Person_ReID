@@ -8,10 +8,10 @@ Person Re-Identification (Re-ID) is a computer vision task that aims to recogniz
 ### About this Project
 This project focuses on implementing **Person Re-ID using OSNet**, a state-of-the-art lightweight deep learning model specifically designed for re-identification tasks. OSNet effectively captures multi-scale discriminative features while maintaining high efficiency.
 
-### 📌 Key Features
+### Key Features
 - **Deep Learning Framework:** PyTorch
 - **Backbone Model:** OSNet
-- **Datasets Used:** Market-1501, DukeMTMC-reID, MSMT17
+- **Datasets Used:** CUHK03
 - **Evaluation Metrics:** Mean Average Precision (mAP), Rank-1 Accuracy
 - **Applications:** Security surveillance, pedestrian analysis, forensic investigations
 
@@ -37,7 +37,7 @@ This repository provides an end-to-end pipeline for training, evaluating, and de
 ## 2️⃣ Installation & Setup
 ### Prerequisites
 Before running the project, ensure you have the following dependencies installed:
-- Python 3.8+
+- Python
 - PyTorch
 - Torchvision
 - NumPy
@@ -66,15 +66,15 @@ pip install -r requirements.txt
 ### Running the Code
 To train the model, use:
 ```bash
-python src/train.py
+python src/trainer.py
 ```
 
 To evaluate the model, run:
 ```bash
-python src/test.py --config config.yaml
+updating...
 ```
 
 To perform inference on a new image:
 ```bash
-python src/inference.py --image path/to/image.jpg --config config.yaml
+updating...
 ```
