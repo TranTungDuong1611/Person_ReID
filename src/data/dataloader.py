@@ -40,13 +40,13 @@ for image_path, pid, cam_id in data[0]:
     train_cam_paths.append(cam_id)
     
 # Test dataset
-test_image_paths = []
-test_labels = []
-test_cam_paths = []
+query_image_paths = []
+query_labels = []
+query_cam_paths = []
 for image_path, pid, cam_id in data[1]:
-    test_image_paths.append(image_path)
-    test_labels.append(pid)
-    test_cam_paths.append(cam_id)
+    query_image_paths.append(image_path)
+    query_labels.append(pid)
+    query_cam_paths.append(cam_id)
 
 # Gallery dataset
 gallery_image_paths = []
@@ -64,13 +64,13 @@ trans = {
         transforms.RandomResizedCrop((256, 128), scale=(0.8, 1), ratio=(0.25, 4)),
         RandomPatch()
     ]),
-    "val": transforms.Compose([
+    "query": transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize((256, 128))
     ])
 }
 
-class CUHK04_Dataset(Dataset):
+class CUHK03_Dataset(Dataset):
     def __init__(self, image_paths, labels, trans=None):
         super().__init__()
         self.image_paths = image_paths
@@ -91,10 +91,22 @@ class CUHK04_Dataset(Dataset):
         return image, pid
     
 def get_traindata():
-    train_dataset = CUHK04_Dataset(train_image_paths, train_labels, trans=trans['train'])
+    train_dataset = CUHK03_Dataset(train_image_paths, train_labels, trans=trans['train'])
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
     
     return train_loader
+
+def get_query():
+    query_dataset = CUHK03_Dataset(query_image_paths, query_labels, trans=trans['query'])
+    query_loader = DataLoader(query_dataset, batch_size=len(query_image_paths), shuffle=True)
+
+    return query_loader
+
+def get_gallery():
+    gallery_dataset = CUHK03_Dataset(gallery_image_paths, gallery_label_paths, trans=trans['query'])
+    gallery_loader = DataLoader(gallery_dataset, batch_size=len(gallery_image_paths), shuffle=False)
+    
+    return gallery_loader
 
 def get_total_pids():
     return np.max(train_labels) + 1
