@@ -1,25 +1,30 @@
-import os
 import json
+import math
+import os
+import random
+import sys
+
 import cv2
 import matplotlib.pyplot as plt
-import random
-import math
-import sys
 import numpy as np
 
 sys.path.append(os.getcwd())
-import torch
-import torchvision
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
+
 from src.data.transforms import *
 
+# load data
 split_new_label_path = './data/cuhk03/archive/splits_new_labeled.json'
-
 with open(split_new_label_path, 'r') as f:
     data = json.load(f)
 
 data = list(data[0].values())
+
+# load config
+config_path = './src/config.json'
+with open(config_path, 'r') as f:
+    config = json.load(f)
 
 def process_image_paths(data):
     for i in range(3):
@@ -39,7 +44,7 @@ for image_path, pid, cam_id in data[0]:
     train_labels.append(pid)
     train_cam_paths.append(cam_id)
     
-# Test dataset
+# query dataset
 query_image_paths = []
 query_labels = []
 query_cam_paths = []
@@ -62,7 +67,11 @@ trans = {
         transforms.ToTensor(),
         transforms.RandomHorizontalFlip(),
         transforms.RandomResizedCrop((256, 128), scale=(0.8, 1), ratio=(0.25, 4)),
-        RandomPatch()
+        RandomPatch(),
+        
+        # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+        # transforms.RandomErasing(p=0.5, scale=(0.02, 0.2)),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ]),
     "query": transforms.Compose([
         transforms.ToTensor(),
@@ -71,11 +80,12 @@ trans = {
 }
 
 class CUHK03_Dataset(Dataset):
-    def __init__(self, image_paths, labels, trans=None):
+    def __init__(self, image_paths, labels, trans=None, get_image_path=False):
         super().__init__()
         self.image_paths = image_paths
         self.labels = labels
         self.trans = trans
+        self.get_image_path = get_image_path
         
     def __len__(self):
         return len(self.image_paths)
@@ -88,23 +98,26 @@ class CUHK03_Dataset(Dataset):
         if self.trans:
             image = self.trans(image)
         
-        return image, pid
+        if self.get_image_path:
+            return image, pid, self.image_paths[index]
+        else:
+            return image, pid
     
 def get_traindata():
     train_dataset = CUHK03_Dataset(train_image_paths, train_labels, trans=trans['train'])
-    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=config['dataset']['batch_size'], shuffle=True)
     
     return train_loader
 
 def get_query():
     query_dataset = CUHK03_Dataset(query_image_paths, query_labels, trans=trans['query'])
-    query_loader = DataLoader(query_dataset, batch_size=len(query_image_paths), shuffle=True)
+    query_loader = DataLoader(query_dataset, batch_size=config['dataset']['batch_size'], shuffle=True)
 
     return query_loader
 
-def get_gallery():
-    gallery_dataset = CUHK03_Dataset(gallery_image_paths, gallery_label_paths, trans=trans['query'])
-    gallery_loader = DataLoader(gallery_dataset, batch_size=len(gallery_image_paths), shuffle=False)
+def get_gallery(get_image_path=False):   
+    gallery_dataset = CUHK03_Dataset(gallery_image_paths, gallery_label_paths, trans=trans['query'], get_image_path=get_image_path)
+    gallery_loader = DataLoader(gallery_dataset, batch_size=config['dataset']['batch_size'], shuffle=False)
     
     return gallery_loader
 
