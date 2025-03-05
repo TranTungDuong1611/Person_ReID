@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import sys
+
 import numpy as np
 from tqdm import tqdm
 
@@ -26,7 +27,6 @@ def read_config(config_path):
 config = read_config('./src/config.json')
 
 def training_loop(model, train_loader, lr, epochs, weight_decay, config=config, device=device):
-    os.makedirs('checkpoints', exist_ok=True)
     model = model.to(device)
     
     criterion = CrossEntropyLoss(label_smoothing=0.1)
@@ -62,14 +62,14 @@ def training_loop(model, train_loader, lr, epochs, weight_decay, config=config, 
             best_weight = train_loss
             torch.save(model.state_dict(), './checkpoints/best_weight.pt')
         
-        print(f"Epoch {epoch}/{epochs}\ttrain_loss: {train_loss:.4f}")
+        tqdm.write(f"Epoch {epoch}/{epochs}\ttrain_loss: {train_loss:.4f}")
         
+    os.makedirs('figures', exist_ok=True)
     plt.plot(range(len(train_losses)), train_losses)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.tight_layout()
     plt.title('Training loss')
-    os.makedirs('figures', exist_ok=True)
     plt.savefig('./figures/training_loss.png')
 
 def main():
